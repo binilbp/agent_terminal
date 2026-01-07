@@ -1,4 +1,3 @@
 langchain
 langgraph
-ChatOllama
-
+langchain-ollama
