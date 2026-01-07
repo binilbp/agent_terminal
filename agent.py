@@ -12,6 +12,8 @@ class AgentState(TypedDict):
     user_approved: bool = False
     sanity_check_passed: bool = False
 
+llm = ChatOllama(model = "llama3.2", temperature=0)
+
 
 
 
