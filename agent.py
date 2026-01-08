@@ -1,12 +1,20 @@
 from typing_extensions import TypedDict, Annotated
 from pydantic import BaseModel, Field
 
-from langchain.tools import tool
 from langchain_ollama import ChatOllama
+from langchain_groq import ChatGroq
+
+from langchain.tools import tool
 from langchain_core.messages import HumanMessage, SystemMessage
 from langgraph.graph import StateGraph, START, END
 from langgraph.graph.message import add_messages
 from langgraph.prebuilt import ToolNode, tools_condition
+
+
+# Model Service selection
+service = "GROQ"
+#service = "OLLAMA"
+
 
 # class AgentState(TypedDict):
 #     goal: str
@@ -49,9 +57,33 @@ class AgentState(TypedDict):
 
 
 # Model Defining
-small_llm = ChatOllama(model = "qwen2.5-coder:3b", temperature=0)
-structured_small_llm = small_llm.with_structured_output(LinuxCommand)
-big_llm = ChatOllama(model = "llama3.1:8b", temperature=0)
+if service == "GROQ":
+    # API Key setup
+    import os
+    from dotenv import load_dotenv
+    load_dotenv()
+    
+    if "GROQ_API_KEY" not in os.environ:
+        print("GROQ API key not found or not setup")
+        exit 
+
+    else:
+        big_llm = ChatGroq(
+            model="qwen/qwen3-32b",
+            # model="llama-3.1-8b-instant",
+            temperature = 0,
+            max_retries = 2,
+        )
+        structured_small_llm = big_llm.with_structured_output(LinuxCommand)
+
+elif service == "OLLAMA":
+    small_llm = ChatOllama(model = "qwen2.5-coder:3b", temperature=0)
+    structured_small_llm = small_llm.with_structured_output(LinuxCommand)
+    big_llm = ChatOllama(model = "llama3.1:8b", temperature=0)
+
+
+
+# Tool Binding the llm
 big_llm = big_llm.bind_tools(tools_list)
 
 
@@ -97,18 +129,17 @@ def run_agent():
                 stream_mode="values"
         )
        
-        print("\n")
         for event in events:
             if "messages" in event:
                 last_message = event["messages"][-1]
                 if last_message.type == "ai":
                     if last_message.tool_calls:
-                        print(f"[INFO]: Tool Called {last_message.tool_calls[0]['name']} ")
+                        print(f"[INFO]: Tool Called: {last_message.tool_calls[0]['name']} ")
                     else:
                         print(f"\nAGENT: {last_message.content}\n")
 
                 elif last_message.type == "tool":
-                    print(f"[INFO]: Tool Output {last_message.content}")
+                    print(f"[INFO]: Tool Output: {last_message.content}")
 
         
 
