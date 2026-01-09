@@ -1,26 +1,27 @@
 # this file contains the functions for setting up llm
 
 # this list shows the different available run types
-available_run_types = ['groq', 'ollama']
 
 
-
-from dataclasses import replace
 from config.settings import Settings
+from typing import get_args
 
 def set_run_type(settings: Settings) -> Settings:
 
-    count = 1
+    available_run_types = Settings.model_fields['run_types'].annotation
+
     print("Run Types Available: ")
-    for type in available_run_types:
-        print(f'{count}. {type}')
-        count+=1
+    for i, type in enumerate(available_run_types, start=1):
+        print(f'{i}. {type}')
 
     #setting the value and handling the invalid input
     try:
         option_number = int(input("Enter Option Number: "))
         selected_run_type = available_run_types[option_number - 1]
-        settings = replace(settings, run_type = selected_run_type)
+        #create a new model since settings is immutable
+        settings = settings.model_copy(
+            update('run_type': selected_run_type)
+        )
         print(f'[INFO]: set run type as {available_run_types[option_number-1]}')
 
     except:

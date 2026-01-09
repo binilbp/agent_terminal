@@ -1,4 +1,4 @@
-from config.settings import Settings
+from config.settings import Settings, set_run_type
 
 
 def main():
@@ -6,8 +6,6 @@ def main():
     settings = Settings();
 
     # Set Run Type
-    from llm import set_run_type
-
     settings = set_run_type(settings)
 
 
