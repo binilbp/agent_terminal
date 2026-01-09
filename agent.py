@@ -26,7 +26,7 @@ service = "GROQ"
 
 
 # Schemas
-class LinuxCommand(BaseModel):
+class CommandSchema(BaseModel):
     """Schema to force the LLM to output ONLY the command."""
     command: str = Field(description="The pure linux shell command. No markdown, no explanations.")
 
@@ -44,9 +44,9 @@ def generate_command(query: str) -> str:
     """    
     prompt = f"return the command for executing the user query on ubuntu: {query}"
 
-    print("[info]: kutti llm running...")
-    tool_output = structured_small_llm.invoke(prompt)
-    return tool_output.command
+    print("[info]: command_gen_llm running...")
+    command_output = command_gen_llm.invoke(prompt)
+    return command_output.command
 
 tools_list = [generate_command]
 
@@ -74,7 +74,14 @@ if service == "GROQ":
             temperature = 0,
             max_retries = 2,
         )
-        structured_small_llm = big_llm.with_structured_output(LinuxCommand)
+
+        command_gen_llm = ChatGroq(
+            model="qwen/qwen3-32b",
+            temperature = 0,
+            max_retries = 2,
+        )
+
+        command_gen_llm = command_gen_llm.with_structured_output(CommandSchema)
 
 elif service == "OLLAMA":
     small_llm = ChatOllama(model = "qwen2.5-coder:3b", temperature=0)
