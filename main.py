@@ -1,12 +1,9 @@
-from config.settings import Settings, set_run_type
+from config.settings import SETTINGS
 
 
 def main():
-    # default settings creation
-    settings = Settings();
-
-    # Set Run Type
-    settings = set_run_type(settings)
+    # print(SETTINGS.classifier_llm.service)
+    print(SETTINGS)
 
 
 if __name__ == "__main__":
