@@ -1,53 +1,60 @@
-# this file contains the base settings pydantic model and the functions to change the settings value
+import json
+import os
+from pathlib import Path
+from dotenv import load_dotenv
+from pydantic import BaseModel, Field, ValidationError, model_validator
+from typing import Literal
 
-from pydantic import BaseModel, Field
-from typing import Literal, get_args
+# load secrets from .env file
+load_dotenv()
 
 
+class LLMParams(BaseModel):
+    #defining the possible services to user
+    service: Literal["groq_api", "ollama" ] 
+    model_name: str
+    model_temp: float = Field(ge=0.0, le=1.0) # Temperature constraints
+    max_retry: int = Field(default=2, ge=0)
+    max_token: int = Field(default=300, gt=0, le=600)
 
 class Settings(BaseModel):
-    run_type: Literal['groq', 'ollama'] = 'groq'
-    temperature: float = Field(default = 0.0, ge = 0.0, le = 1.0)
-    max_retries: int = Field(default = 2, ge = 0, le = 4)
+    classifier_llm: LLMParams
+    command_gen_llm: LLMParams
+    
+    # Internal validation logic
+    @model_validator(mode='after')
+    def check_api_keys_exist(self):
+
+        # Check Classifier Service
+        if self.classifier_llm.service == "groq_api" and not os.getenv("GROQ_API_KEY"):
+            raise ValueError("Configuration asks for 'groq_api' in classifier_llm, but GROQ_API_KEY is missing in .env")
+            
+        # Check Command Gen Service
+        if self.command_gen_llm.service == "groq_api" and not os.getenv("GROQ_API_KEY"):
+            raise ValueError("Configuration asks for 'groq_api' in command_gen_llm, but GROQ_API_KEY is missing in .env")
+            
+        return self
 
 
-    model_config = {
-        "frozen": True
-    }
+BASE_DIR = Path(__file__).resolve().parent.parent
+SETTINGS_PATH = os.path.join(BASE_DIR, "config", "settings.json")
 
+def load_settings() -> Settings:
+    if not os.path.exists(SETTINGS_PATH):
+        raise FileNotFoundError(f"settings.json missing at {SETTINGS_PATH}")
 
+    with open(SETTINGS_PATH, "r") as f:
+        data = json.load(f)
 
-# modify the run type of the models
-def set_run_type(settings: Settings) -> Settings:
-
-    available_run_types = get_args(
-            Settings.model_fields['run_type'].annotation
-    )
-
-    print("Run Types Available: ")
-    for i, run_type in enumerate(available_run_types, start=1):
-        print(f'{i}. {run_type}')
-
-    #setting the value and handling the invalid input
     try:
-        option_number = int(input("Enter Option Number: "))
-        selected_run_type = available_run_types[option_number - 1]
+        # Pydantic validates types and runs the @model_validator above
+        settings = Settings(**data)
+        return settings
+    except ValidationError as e:
+        print("\n!!! CONFIGURATION ERROR !!!")
+        print(f"Validation failed:\n{e}")
+        # Exit or re-raise depending on preference
+        raise
 
-        #create a new model since settings is immutable
-        settings = settings.model_copy(
-            update={'run_type': selected_run_type}
-        )
-
-        print(f'[INFO]: set run type as {available_run_types[option_number-1]}')
-
-    except (ValueError, IndexError):
-        print(f"[ERROR]: invalid option")
-        settings = settings.model_copy(
-            update={'run_type': available_run_types[0]}
-        )        
-        print(f"[INFO]: default value ({available_run_types[0]}) selected")
-
-     
-    return settings
-
-
+# Instantiate globally
+SETTINGS = load_settings()
