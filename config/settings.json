@@ -1,16 +1,24 @@
 {
+    "name": "Linquix",
     "classifier_llm": {
         "service" : "groq_api",
         "model_name": "qwen/qwen3-32b",
         "model_temp": 0,
         "max_retry": 2,
-        "max_token": 500
+        "max_tokens": 500
     },
     "command_gen_llm":{
         "service" : "groq_api",
         "model_name": "qwen/qwen3-32b",
         "model_temp": 0,
         "max_retry": 2,
-        "max_token": 500
+        "max_tokens": 500
+    },
+    "small_chat_llm":{
+        "service" : "groq_api",
+        "model_name": "llama-3.1-8b-instant",
+        "model_temp": 1,
+        "max_retry": 2,
+        "max_tokens": 300
     }
 }

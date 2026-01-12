@@ -13,13 +13,15 @@ class LLMParams(BaseModel):
     #defining the possible services to user
     service: Literal["groq_api", "ollama" ] 
     model_name: str
-    model_temp: float = Field(ge=0.0, le=1.0) # Temperature constraints
+    model_temp: float = Field(ge=0.0, le=2.0) # Temperature constraints
     max_retry: int = Field(default=2, ge=0)
-    max_token: int = Field(default=300, gt=0, le=600)
+    max_tokens: int = Field(default=300, gt=0, le=600)
 
 class Settings(BaseModel):
+    name: str
     classifier_llm: LLMParams
     command_gen_llm: LLMParams
+    small_chat_llm: LLMParams
     
     # Internal validation logic
     @model_validator(mode='after')
@@ -33,6 +35,11 @@ class Settings(BaseModel):
         if self.command_gen_llm.service == "groq_api" and not os.getenv("GROQ_API_KEY"):
             raise ValueError("Configuration asks for 'groq_api' in command_gen_llm, but GROQ_API_KEY is missing in .env")
             
+
+        # Check Small Chat llm
+        if self.command_gen_llm.service == "groq_api" and not os.getenv("GROQ_API_KEY"):
+            raise ValueError("Configuration asks for 'groq_api' in command_gen_llm, but GROQ_API_KEY is missing in .env")
+
         return self
 
 
