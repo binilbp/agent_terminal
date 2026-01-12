@@ -21,3 +21,18 @@ def get_classifier_llm():
         return structured_model
 
 
+
+def get_small_chat_llm():
+    
+    if SETTINGS.classifier_llm.service == "groq_api":
+
+        base_model = ChatGroq(
+            model=SETTINGS.small_chat_llm.model_name,
+            temperature = SETTINGS.small_chat_llm.model_temp,
+            max_retries = SETTINGS.small_chat_llm.max_retry,
+            max_tokens = SETTINGS.small_chat_llm.max_tokens
+        )
+
+        return base_model
+
+
