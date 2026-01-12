@@ -1,12 +1,18 @@
 from config.settings import SETTINGS
-from Agent.utils.state import AgentState
+from Agent.agent import run_agent
 
 def main():
     # print(SETTINGS.classifier_llm.service)
-    print(SETTINGS)
+    print(f'SETTINGS Applied:\n {SETTINGS.model_dump_json(indent=4)}\n')
     
-    from Agent.utils.nodes import is_sys_ass_req
-    is_sys_ass_req(AgentState)
+    while True:
+        user_input = input("\nUSER: ")
+
+        #condition to break the while loop/ to exit
+        if user_input.lower() in ["quit", "exit"]:
+            break
+
+        run_agent(user_input)
 
 
 if __name__ == "__main__":
