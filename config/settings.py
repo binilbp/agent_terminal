@@ -22,6 +22,7 @@ class Settings(BaseModel):
     classifier_llm: LLMParams
     command_gen_llm: LLMParams
     small_chat_llm: LLMParams
+    planner_llm: LLMParams
     
     # Internal validation logic
     @model_validator(mode='after')
@@ -37,9 +38,12 @@ class Settings(BaseModel):
             
 
         # Check Small Chat llm
-        if self.command_gen_llm.service == "groq_api" and not os.getenv("GROQ_API_KEY"):
+        if self.small_chat_llm.service == "groq_api" and not os.getenv("GROQ_API_KEY"):
             raise ValueError("Configuration asks for 'groq_api' in command_gen_llm, but GROQ_API_KEY is missing in .env")
 
+        # Check Planner llm
+        if self.planner_llm.service == "groq_api" and not os.getenv("GROQ_API_KEY"):
+            raise ValueError("Configuration asks for 'groq_api' in command_gen_llm, but GROQ_API_KEY is missing in .env")
         return self
 
 

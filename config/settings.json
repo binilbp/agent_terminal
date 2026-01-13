@@ -5,14 +5,14 @@
         "model_name": "qwen/qwen3-32b",
         "model_temp": 0,
         "max_retry": 2,
-        "max_tokens": 500
+        "max_tokens": 300
     },
     "command_gen_llm":{
         "service" : "groq_api",
         "model_name": "qwen/qwen3-32b",
         "model_temp": 0,
         "max_retry": 2,
-        "max_tokens": 500
+        "max_tokens": 300
     },
     "small_chat_llm":{
         "service" : "groq_api",
@@ -20,5 +20,12 @@
         "model_temp": 1,
         "max_retry": 2,
         "max_tokens": 300
+    },
+    "planner_llm":{
+        "service" : "groq_api",
+        "model_name": "qwen/qwen3-32b",
+        "model_temp": 0,
+        "max_retry": 2,
+        "max_tokens": 500
     }
 }
