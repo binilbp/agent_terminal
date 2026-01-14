@@ -5,7 +5,7 @@
         "model_name": "qwen/qwen3-32b",
         "model_temp": 0,
         "max_retry": 2,
-        "max_tokens": 300
+        "max_tokens": 500
     },
     "command_gen_llm":{
         "service" : "groq_api",
@@ -26,6 +26,6 @@
         "model_name": "qwen/qwen3-32b",
         "model_temp": 0,
         "max_retry": 2,
-        "max_tokens": 500
+        "max_tokens": 600
     }
 }
