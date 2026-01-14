@@ -3,11 +3,14 @@
 
 from typing_extensions import TypedDict, Annotated
 from langgraph.graph.message import add_messages
-
+from typing import Literal
 
 
 class AgentState(TypedDict):
     messages: Annotated[list, add_messages]
-    is_sys_ass_req: bool
-    sys_ass_reason: str
-
+    classification: Literal[
+        "REQUIRES_LINUX_ASSISTANCE",
+        "DOES_NOT_REQUIRE_LINUX_ASSISTANCE",
+        "NEEDS_CLARIFICATION"
+    ]
+    classification_reason: str
