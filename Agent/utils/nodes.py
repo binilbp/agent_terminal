@@ -24,7 +24,8 @@ planner_llm = get_llm("planner")
 def classification(state: AgentState) -> Command[Literal["planning", "out_of_scope", "clarification"]]: 
 
     
-    print(f'\n[STATE INFO]: {pformat(state)}\n')
+    if SETTINGS.debug:
+        print(f'\n[STATE INFO]: {pformat(state)}\n')
 
     sys_message = SystemMessage(content ="""
         You are a decision engine for an autonomous Linux Shell Agent.
@@ -59,7 +60,6 @@ def classification(state: AgentState) -> Command[Literal["planning", "out_of_sco
 
         message = [sys_message] + user_query
         result = classifier_llm.invoke(message)
-        print(f'[AGENT]: {result}')
         
         assist_required = result.classification
         reason = result.reasoning
@@ -93,7 +93,8 @@ def classification(state: AgentState) -> Command[Literal["planning", "out_of_sco
 
 def out_of_scope(state: AgentState):
     
-    print(f'\n[STATE INFO]: \n{pformat(state)}')
+    if SETTINGS.debug:
+        print(f'\n[STATE INFO]: {pformat(state)}\n')
 
 
     print(f'[INFO]: out of scope node running')
@@ -112,14 +113,17 @@ def out_of_scope(state: AgentState):
 
     message = [sys_message, user_query ]
     result = simple_chat_llm.invoke(message)
-    print(f'[AGENT]: {result.content}')
+    if SETTINGS.debug:
+        print(f'[NODE]: {result.content}')
+
     return { "messages" : [result]}
 
 
 
 def planning(state:AgentState):
 
-    print(f'\n[STATE INFO]: {pformat(state)}\n')
+    if SETTINGS.debug:
+        print(f'\n[STATE INFO]: {pformat(state)}\n')
 
 
     print(f'[INFO]: planning node running')
@@ -127,8 +131,8 @@ def planning(state:AgentState):
     user_query = state["messages"][-1].content
 
     sys_message = SystemMessage(content = '''Role: You are a Senior Linux System Architect .
-    Task: Analyze the user's request and break it down into a series of simple, atomic, linear steps.
-    Output : Output list of steps
+    Task: Analyze the user's request and break it down into a series of simple, atomic, linear steps that can executed using a shell.
+    Output : Output the execution plan as a JSON object with a key "plan_list"
     Guidelines:
         Each step must be a single logical action (e.g., "Update apt packages", "Install Python3", "Create a file named hello.py").
         Ensure steps are in the correct dependency order.
@@ -137,13 +141,15 @@ def planning(state:AgentState):
 
     message = [sys_message, user_query]
     result =  planner_llm.invoke( message )
+    print(f'[NODE]:Plan List: {result.plan_list}')
 
-    return {"messages": [result]}
+    return {"plan_list": [result.plan_list]}
 
 
 def clarification(state: AgentState):
      
-    print(f'\n[STATE INFO]: {pformat(state)}\n')
+    if SETTINGS.debug:
+        print(f'\n[STATE INFO]: {pformat(state)}\n')
 
     print(f'[INFO]: clarification node running')
 
@@ -155,7 +161,9 @@ def clarification(state: AgentState):
     problem = state['classification_reason']
     result = simple_chat_llm.invoke([sys_message, f'issue:{problem}'])
 
-    print(f'[AGENT]: {result.content}')
+    if SETTINGS.debug:
+        print(f'[NODE]: {result.content}')
+
     user_input = input("[USER ]:")
 
     return {"messages": [result, HumanMessage(content = user_input)]}
