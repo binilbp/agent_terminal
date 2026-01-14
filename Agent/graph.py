@@ -4,21 +4,19 @@
 
 from langgraph.graph import StateGraph, START, END
 from Agent.utils.state import AgentState 
-from Agent.utils.nodes import is_sys_ass_req, planner, retry, test_print_state
+from Agent.utils.nodes import classification, planning, out_of_scope, clarification, test_print_state
 
 
 
 def get_graph():
     graph_builder = StateGraph(AgentState)
-    graph_builder.add_node( "is_sys_ass_req", is_sys_ass_req )
+    graph_builder.add_node( "classification", classification )
+    graph_builder.add_node( "planning", planning )
+    graph_builder.add_node( "out_of_scope", out_of_scope )
+    graph_builder.add_node( "clarification", clarification )
 
-    #test node
-    graph_builder.add_node( "print_state", test_print_state )
-    graph_builder.add_node( "planner", planner )
-    graph_builder.add_node( "retry", retry )
 
-    graph_builder.add_edge( START, "is_sys_ass_req" )
-    graph_builder.add_edge( "is_sys_ass_req", "print_state" )
-    graph_builder.add_edge( "print_state", END )
+    graph_builder.add_edge( START, "classification" )
+    graph_builder.add_edge( "clarification", "classification" )
 
     return graph_builder.compile()
