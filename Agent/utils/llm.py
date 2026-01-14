@@ -41,8 +41,8 @@ def get_classifier_llm():
         )
 
         # making classifier llm structured based on schema
-    from Agent.schemas.node_schemas import SystemAssistSchema
-    structured_model = base_model.with_structured_output(SystemAssistSchema)
+    from Agent.schemas.node_schemas import ClassificationSchema
+    structured_model = base_model.with_structured_output(ClassificationSchema)
 
     return structured_model
 
@@ -92,12 +92,12 @@ def get_planner_llm():
             max_tokens = SETTINGS.planner_llm.max_tokens
         )
 
-        # from Agent.schemas.node_schemas import PlanListSchema
-        # structured_model = base_model.with_structured_output(PlanListSchema, method="json_mode")
-        # making the tool available for the model
-        # model_with_tools = structured_model.bind_tools([get_system_info])
+    from Agent.schemas.node_schemas import PlanListSchema
+    structured_model = base_model.with_structured_output(PlanListSchema, method="json_mode")
+    # making the tool available for the model
+    # model_with_tools = structured_model.bind_tools([get_system_info])
 
-    return base_model
+    return structured_model
 
 # ###### todo use match to set all to single functiono call, give is_executable llm
 
