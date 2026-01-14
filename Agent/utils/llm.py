@@ -3,6 +3,22 @@
 from config.settings import SETTINGS 
 from langchain_groq import ChatGroq
 
+
+
+# unified function to call other functions in this file 
+def get_llm(llm):
+    match llm:
+        case "classifier":
+            return get_classifier_llm()
+
+        case "small_chat":
+            return get_small_chat_llm()
+
+        case "planner":
+            return get_planner_llm()
+
+
+
 def get_classifier_llm():
     
     if SETTINGS.classifier_llm.service == "groq_api":
@@ -35,4 +51,26 @@ def get_small_chat_llm():
 
         return base_model
 
+
+
+from Agent.utils.tools import get_system_info
+def get_planner_llm():
+    
+    if SETTINGS.classifier_llm.service == "groq_api":
+
+        base_model = ChatGroq(
+            model=SETTINGS.planner_llm.model_name,
+            temperature = SETTINGS.planner_llm.model_temp,
+            max_retries = SETTINGS.planner_llm.max_retry,
+            max_tokens = SETTINGS.planner_llm.max_tokens
+        )
+
+        # from Agent.schemas.node_schemas import PlanListSchema
+        # structured_model = base_model.with_structured_output(PlanListSchema, method="json_mode")
+        # making the tool available for the model
+        # model_with_tools = structured_model.bind_tools([get_system_info])
+
+        return base_model
+
+# ###### todo use match to set all to single functiono call, give is_executable llm
 
