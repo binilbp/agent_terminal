@@ -19,6 +19,7 @@ class LLMParams(BaseModel):
 
 class Settings(BaseModel):
     name: str
+    debug: bool
     classifier_llm: LLMParams
     command_gen_llm: LLMParams
     small_chat_llm: LLMParams
