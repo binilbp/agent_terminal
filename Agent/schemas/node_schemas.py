@@ -3,28 +3,66 @@ from pydantic import BaseModel, Field
 
 
 
-class SystemAssistSchema(BaseModel):
+
+from typing import Literal
+from pydantic import BaseModel, Field
+
+
+class ClassificationSchema(BaseModel):
     """
-    Classification schema to determine if a user query requires Linux system, 
-    shell, or administrative assistance.
+    Classification schema to determine whether a user query:
+    - requires Linux shell/system assistance,
+    - does not require it, or
+    - needs clarification before taking action.
     """
-    
-    reasoning: str = Field(
+
+    classification: Literal[
+        "REQUIRES_LINUX_ASSISTANCE",
+        "DOES_NOT_REQUIRE_LINUX_ASSISTANCE",
+        "NEEDS_CLARIFICATION",
+    ] = Field(
         description=(
-            "A brief analysis of the user query. Explain whether the query explicitly "
-            "asks for Linux command-line execution, system configuration, "
-            "file system manipulation, or troubleshooting."
+            "Classification result:\n"
+            "- REQUIRES_LINUX_ASSISTANCE: The task is explicit, unambiguous, and can be "
+            "safely completed using Linux shell commands.\n"
+            "- DOES_NOT_REQUIRE_LINUX_ASSISTANCE: The request is conceptual, informational, "
+            "GUI-only, physical, or unrelated to system operations.\n"
+            "- NEEDS_CLARIFICATION: The request is ambiguous, underspecified, or involves "
+            "hardware/system setup with multiple possible paths (e.g., printer, Wi-Fi)."
         )
     )
-    
-    requires_linux_assistance: bool = Field(
+
+    reasoning: str = Field(
         description=(
-            "True if the query requires: "
-            "1. Executing Shell/Bash commands. "
-            "2. System Administration (permissions, users, processes). "
-            "3. Network configuration (not just web browsing). "
-            "4. File system operations (moving, deleting, grep, etc). "
-            "False if the query is general coding (Python, JS), creative writing, "
-            "or general knowledge."
+            "A brief explanation justifying the classification. "
+            "Mention ambiguity, missing details, physical actions, or why shell commands "
+            "are or are not appropriate."
         )
+    )
+
+
+
+class PlanListSchema(BaseModel):
+    """
+    Plan schema to give output plan as a json list
+    """
+
+    plan_list: list[str] = Field(
+            description=(
+                "executiong plan given ONLY as a JSON list of strings. Do not include markdown formatting or explanations."
+            )
+    )
+
+
+
+class TerminalExecutable(BaseModel):
+    """
+    Check if the provided steps can be completed using a terminal
+    """
+
+    is_executable: bool = Field(
+            description=(
+                "True if each steps given can be completed using actual terminal commmands"
+                "False if all steps cannot be completed using actual terminal commands"
+            )
     )
