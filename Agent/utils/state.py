@@ -14,3 +14,4 @@ class AgentState(TypedDict):
         "NEEDS_CLARIFICATION"
     ]
     classification_reason: str
+    plan_list: list[str]
