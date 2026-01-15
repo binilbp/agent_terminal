@@ -1,0 +1,46 @@
+Screen {
+    background: $background-darken-1;
+}
+ASCIName {
+    align: left top;
+    padding: 1 2;
+    height: 15%;
+}
+
+#main-tabbed {
+    padding: 1 2;
+    height: 85%;
+    border: round $background
+}
+
+#input-command-tabbed {
+    padding: 1 0; 
+    height: 60%;
+    background: $background-darken-1;
+}
+
+#input-command-tabbed Tab.-active {
+    background: $success-darken-2;
+}
+
+
+#agent-box {
+    height: 100%;
+    border: round $accent-darken-2;
+    border-title-align: right;
+    background: $background-darken-1
+}
+
+#input-box {
+    border: round $success-darken-2;
+    border-title-align: right;
+    background: $background
+}
+
+#command-box {
+    border: round $success-darken-2;
+    border-title-align: right;
+    background: $background
+}
+
+
