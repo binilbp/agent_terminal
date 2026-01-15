@@ -3,3 +3,7 @@ langgraph
 langchain-ollama
 langchain-groq
 python-dotenv
+
+
+textual
+textual-dev
