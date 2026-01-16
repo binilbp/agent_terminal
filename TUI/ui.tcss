@@ -8,14 +8,22 @@ ASCIName {
 }
 
 #main-tabbed {
-    padding: 1 2;
+    padding: 0 2;
     height: 85%;
     border: round $background
 }
 
+#agent-box {
+    height: 100%;
+    margin-top: 1 ;
+    border: round $accent-darken-2;
+    border-title-align: right;
+    background: $background-darken-1
+}
+
 #input-command-tabbed {
-    padding: 1 0; 
-    height: 60%;
+    padding: 0 1; 
+    height: 40%;
     background: $background-darken-1;
 }
 
@@ -23,24 +31,63 @@ ASCIName {
     background: $success-darken-2;
 }
 
-
-#agent-box {
-    height: 100%;
-    border: round $accent-darken-2;
-    border-title-align: right;
-    background: $background-darken-1
-}
-
 #input-box {
     border: round $success-darken-2;
     border-title-align: right;
-    background: $background
+    background: $background;
+    background: $background-darken-1;
+}
+
+#send-button {
+    margin-left: 1;
+    border: round $success-darken-2;
+    height: 100%;
+    min-width: 6;
+    width: 8%;
+    background: $background-darken-1;
+    color: $success-darken-1;
+}
+
+#send-button:hover {
+    background: $background;
 }
 
 #command-box {
     border: round $success-darken-2;
     border-title-align: right;
-    background: $background
+    background: $background-darken-1;
 }
 
+#command-buttons{
+    width: 10% ;
+    background: $background-darken-1;
+    height: 100%;
+    margin-left: 1;
+    min-width: 6;
+}
 
+#execute-button {
+    height: 55%;
+    width: 100%;
+    border: round $success-darken-2;
+    background: $background-darken-1;
+    color: $success-darken-1;
+    min-width: 6;
+}
+
+#execute-button:hover {
+    background: $background;
+}
+
+#stop-button {
+    height: 45%;
+    width: 100%;
+    min-width: 6;
+    border: round $success-darken-2;
+    background: $background-darken-1;
+    color: $error-darken-1;
+}
+
+#stop-button:hover {
+    background: $background;
+}

@@ -25,18 +25,23 @@ class Agent(Container):
         agent_box.highlight_cursor_line = False
         yield agent_box
 
-class Input(Container):
+class Input(Horizontal):
     def compose(self) -> ComposeResult:
         input_box = TextArea(id="input-box")
         input_box.border_title = "Input"
         input_box.placeholder = "Type your query here.."
+        input_box.highlight_cursor_line = False
         yield input_box
+        yield Button(" ",id="send-button")
 
-class Command(Container):
+class Command(Horizontal):
     def compose(self) -> ComposeResult:
         command_box = TextArea(id="command-box")
         command_box.border_title = "Command"
         yield command_box
+        with Vertical(id="command-buttons"):
+            yield Button(" ",id="execute-button")
+            yield Button(" ",id="stop-button")
 
 
 
@@ -44,9 +49,9 @@ class Terminal(Vertical):
     def compose(self) -> ComposeResult:
         yield Agent()
         with TabbedContent(id="input-command-tabbed"):
-            with TabPane("Input", id="input-tab"):
+            with TabPane("Send Input", id="input-tab"):
                 yield Input()
-            with TabPane("Command", id="command-tab"):
+            with TabPane("Execute Command", id="command-tab"):
                 yield Command()
 
 class App(App):
