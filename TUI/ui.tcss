@@ -39,13 +39,12 @@ ASCIName {
 }
 
 #send-button {
-    margin-left: 1;
+    height: 55%;
+    width: 100%;
     border: round $success-darken-2;
-    height: 100%;
-    min-width: 6;
-    width: 8%;
     background: $background-darken-1;
     color: $success-darken-1;
+    min-width: 6;
 }
 
 #send-button:hover {
@@ -58,12 +57,13 @@ ASCIName {
     background: $background-darken-1;
 }
 
-#command-buttons{
-    width: 10% ;
+#command-buttons, #input-buttons {
+    width: 8% ;
     background: $background-darken-1;
     height: 100%;
     margin-left: 1;
     min-width: 6;
+    align: center middle;
 }
 
 #execute-button {
@@ -79,7 +79,7 @@ ASCIName {
     background: $background;
 }
 
-#stop-button {
+#stop-button, #stop-input-button {
     height: 45%;
     width: 100%;
     min-width: 6;
