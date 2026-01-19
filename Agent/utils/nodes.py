@@ -143,7 +143,16 @@ def planning(state:AgentState):
     result =  planner_llm.invoke( message )
     print(f'[NODE]:Plan List: {result.plan_list}')
 
-    return {"plan_list": [result.plan_list]}
+    # create a plan str and append items to it
+    plan_str = "Current Plan: \n"
+    for step in result.plan_list:
+        plan_str = plan_str + f'- {step}\n'
+
+
+    return {
+        "plan_list": [result.plan_list],
+        "messages": [AIMessage(content = plan_str)]
+    }
 
 
 def clarification(state: AgentState):
@@ -164,9 +173,8 @@ def clarification(state: AgentState):
     if SETTINGS.debug:
         print(f'[NODE]: {result.content}')
 
-    user_input = input("[USER ]:")
 
-    return {"messages": [result, HumanMessage(content = user_input)]}
+    return {"messages": [result]}
 
 
 from pprint import pformat
