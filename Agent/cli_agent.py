@@ -1,17 +1,27 @@
-#this file contain the functions to run the agent 
+# this file contain the functions to run the agent in simple cli 
+# for TUI use python main.py
 
 
 
 from langchain_core.messages import HumanMessage
+from langchain_core.runnables import RunnableConfig
 from Agent.graph import get_graph
-
+from config.settings import SETTINGS
 
 
 graph = get_graph()
 
 
+def run_cli_agent():
+    print(SETTINGS.classifier_llm.service)
+    if SETTINGS.debug:
+        print(f'SETTINGS Applied:\n {SETTINGS.model_dump_json(indent=4)}\n')
 
-def run_agent():
+    print("Linquix Backend")
+    print("Type 'exit' for quit")
+
+    config: RunnableConfig = {"configurable": {"thread_id": "session_1"}}
+
     while True:
         user_input = input("\nUSER: ")
 
@@ -21,7 +31,8 @@ def run_agent():
 
         events = graph.stream(
                     {"messages":[HumanMessage(content=user_input)]},
-                    stream_mode="values"
+                    stream_mode="values",
+                    config = config
         )
            
         for event in events:
