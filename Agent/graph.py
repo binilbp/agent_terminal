@@ -5,6 +5,7 @@
 from langgraph.graph import StateGraph, START, END
 from Agent.utils.state import AgentState 
 from Agent.utils.nodes import classification, planning, out_of_scope, clarification, test_print_state
+from langgraph.checkpoint.memory import MemorySaver
 
 
 
@@ -17,6 +18,7 @@ def get_graph():
 
 
     graph_builder.add_edge( START, "classification" )
-    graph_builder.add_edge( "clarification", "classification" )
+    graph_builder.add_edge( "clarification", END )
 
-    return graph_builder.compile()
+    memory = MemorySaver()
+    return graph_builder.compile(checkpointer=memory)
