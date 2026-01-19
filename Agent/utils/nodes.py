@@ -128,7 +128,7 @@ def planning(state:AgentState):
 
     print(f'[INFO]: planning node running')
 
-    user_query = state["messages"][-1].content
+    user_query = state["messages"]
 
     sys_message = SystemMessage(content = '''Role: You are a Senior Linux System Architect .
     Task: Analyze the user's request and break it down into a series of simple, atomic, linear steps that can executed using a shell.
@@ -137,16 +137,18 @@ def planning(state:AgentState):
         Each step must be a single logical action (e.g., "Update apt packages", "Install Python3", "Create a file named hello.py").
         Ensure steps are in the correct dependency order.
         The steps should be possible on the current user system
-        Do not include verification steps; the execution agent will handle verification.''')
+        Do not include verification steps; the execution agent will handle verification.
+    IMPORTANT: "plan_list" must be a list of STRINGS only. Do not use objects or dictionaries.
+    Example: {"plan_list": ["update apt", "install python"]}''')
 
-    message = [sys_message, user_query]
+    message = [sys_message] + user_query
     result =  planner_llm.invoke( message )
     print(f'[NODE]:Plan List: {result.plan_list}')
 
     # create a plan str and append items to it
     plan_str = "Current Plan: \n"
     for step in result.plan_list:
-        plan_str = plan_str + f'- {step}\n'
+        plan_str = plan_str + f'\t- {step}\n'
 
 
     return {
@@ -162,13 +164,28 @@ def clarification(state: AgentState):
 
     print(f'[INFO]: clarification node running')
 
-    sys_message = SystemMessage(content = f'''
-    You are a clarification engine for a Linux Shell Agent.
-    you are duty is to prepare a question to clarify the issue to the user, so that user can respond back with more info
-    ''')
+    sys_message = SystemMessage(content="""
+        You are a concise clarification engine for a  Linux Shell Assistant.
+        The user's previous command was ambiguous or incomplete.
+        Your goal is to ask a single, short clarifying question to get the missing information.
 
+        Guidelines:
+        - Be direct.
+        - Do not apologize (e.g., avoid "I'm sorry, I didn't understand").
+        - Do not provide conversational filler (e.g., avoid "Here is a clarifying question").
+        - Only output the question.
+    """)
     problem = state['classification_reason']
-    result = simple_chat_llm.invoke([sys_message, f'issue:{problem}'])
+
+    #finding the latest human message in messages
+    for msg in reversed(state["messages"]):
+        if isinstance(msg, HumanMessage):
+            last_input = msg.content
+
+        else:
+            last_input = ""
+
+    result = simple_chat_llm.invoke([sys_message, f'issue:{problem}, user input: {last_input}'])
 
     if SETTINGS.debug:
         print(f'[NODE]: {result.content}')
