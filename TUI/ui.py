@@ -5,6 +5,8 @@ from textual import on, work
 from rich.markdown import Markdown
 from langchain_core.messages import HumanMessage
 from Agent.graph import get_graph
+from TUI.helper_functions import write_log
+
 
 # Logo import
 class ASCIName(Container):
@@ -28,8 +30,8 @@ class Agent(Container):
         yield agent_box
 
     def on_mount(self) -> None:
-        self.query_one("#agent-box", RichLog).write("[AGENT]: How can I help you ?", animate = True)
-
+        self.query_one("#agent-box", RichLog).write("  [blue] [/]  How can I help you today?\n", animate = True)
+        # write_log(self,icon="[blue] [/]", content = "How can i help you ?")
 class Input(Horizontal):
     def compose(self) -> ComposeResult:
         input_box = TextArea(id="input-box")
@@ -97,10 +99,13 @@ class App(App):
         input_box = self.query_one("#input-box", TextArea)
         user_input = input_box.text.strip()
         
+        send_button = self.query_one("#send-button", Button)
+
         if user_input:
             # Clear the input box
             input_box.text = ""
 
+            send_button.loading = True
             #change the is_running to true
             self.is_agent_running = True
 
@@ -114,12 +119,13 @@ class App(App):
         agent_box = self.query_one("#agent-box", RichLog)
         
         # Display User Input
-        self.call_from_thread(lambda: agent_box.write(f"\n[USER]: {user_input}\n"))
-
-
+        write_log(self,icon="  [green] [/] ", content = f"{user_input}")
 
         # Prepare input for the graph
         inputs = {"messages": [HumanMessage(content=user_input)]}
+
+
+        send_button = self.query_one("#send-button", Button)
 
         try:
             # Stream events from the graph
@@ -128,8 +134,11 @@ class App(App):
             for event in events:
                 #check if running status is true
                 if not self.is_agent_running:
-                    self.call_from_thread(lambda: agent_box.write("\n[WARN]: Process stopped by user\n"))
+                    write_log(self,icon="  [red] [/] ", content = "Process stopped by user\n")
                     break
+
+                if "current_plan" in event:
+                    current_plan = event["current_plan"]
 
                 if "messages" in event:
                     last_message = event["messages"][-1]
@@ -141,16 +150,17 @@ class App(App):
                     content = last_message.content
 
                     if last_message.type == "ai":
+                        send_button.loading = False
                         # Check for tool calls (internal thought process) vs final response
                         if hasattr(last_message, 'tool_calls') and last_message.tool_calls:
                             tool_name = last_message.tool_calls[0]['name']
-                            self.call_from_thread(lambda: agent_box.write(f"\n[INFO]: Tool Called: {tool_name}\n"))
+                            write_log(self,icon="  [red] [/] ", content = f"{tool_name} Tool Called")
                         else:
                             # Render with Markdown
-                            self.call_from_thread(lambda: agent_box.write(Markdown(f"\n[AGENT]: {content}\n")))
+                            write_log(self,icon="  [blue] [/] ", content = f"{content}")
 
                     elif last_message.type == "tool":
-                         self.call_from_thread(lambda: agent_box.write(f"\n[TOOL OUTPUT]: {content}\n"))
+                         self.call_from_thread(lambda: agent_box.write(f"[TOOL OUTPUT]: {content}"))
         
         except Exception as e:
             self.call_from_thread(lambda: agent_box.write(f"\n[ERROR]: {str(e)}\n"))

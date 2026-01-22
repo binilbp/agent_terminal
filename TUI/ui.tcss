@@ -1,16 +1,29 @@
 Screen {
     background: $background-darken-1;
 }
+
 ASCIName {
     align: left top;
-    padding: 1 2;
-    height: 15%;
+    padding-top: 1;
+    padding-left: 4;
+    height: 10%;
+}
+
+Button {
+    content-align: center middle;  
+    height: auto;                 
+    min-width: 5;                
 }
 
 #main-tabbed {
     padding: 0 2;
-    height: 85%;
+    height: 90%;
     border: round $background
+}
+
+LoadingIndicator {
+    border: round $success-darken-2;
+    background: $background-darken-1
 }
 
 #agent-box {
@@ -23,7 +36,7 @@ ASCIName {
 
 #input-command-tabbed {
     padding: 0 1; 
-    height: 40%;
+    height: 45%;
     background: $background-darken-1;
 }
 
@@ -83,7 +96,7 @@ ASCIName {
     height: 45%;
     width: 100%;
     min-width: 6;
-    border: round $success-darken-2;
+    border: round $error-darken-2;
     background: $background-darken-1;
     color: $error-darken-1;
 }
