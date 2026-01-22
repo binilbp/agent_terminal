@@ -2,7 +2,7 @@
 
 
 from textual.app import App, ComposeResult
-from textual.widgets import TabbedContent, TabPane, Button, Label, Footer, TextArea, RichLog
+from textual.widgets import TabbedContent, TabPane, Button, Label, Footer, TextArea, RichLog, LoadingIndicator
 from textual.containers import Container, Vertical, Horizontal
 from textual import on, work
 from rich.markdown import Markdown
@@ -27,6 +27,9 @@ class App(App):
 
         # variable to track running state
         self.is_agent_running = False
+        #hide the loading-bar in the beggining
+        self.query_one("#loading-bar").styles.display = "none"
+
 
     def compose(self) -> ComposeResult:
         with Vertical():
@@ -45,19 +48,29 @@ class App(App):
             self.is_agent_running = False
             # give notification to the user
             self.notify("Stopping generation..", severity="warning", timeout = 2.0)
+            
+            # send_button maybe disabled as we can stop before ai message retrieval,therefor enable send_button
+            send_button = self.query_one("#send-button", Button)
+            send_button.disabled = False
+            # we should also hide the loading-bar
+            self.query_one("#loading-bar").styles.display = "none"
 
     @on(Button.Pressed, "#send-button")
     def handle_send_button(self, event: Button.Pressed) -> None:
         input_box = self.query_one("#input-box", TextArea)
         user_input = input_box.text.strip()
         
+
         send_button = self.query_one("#send-button", Button)
 
         if user_input:
             # Clear the input box
             input_box.text = ""
 
-            send_button.loading = True
+            #disable the send_button util we get an ai reply, while enabling the loading-bar
+            send_button.disabled = True
+            self.query_one("#loading-bar").styles.display = "block"
+
             #change the is_running to true
             self.is_agent_running = True
 
@@ -102,7 +115,10 @@ class App(App):
                     content = last_message.content
 
                     if last_message.type == "ai":
-                        send_button.loading = False
+                        #enable the send_button again, since we got the ai message back
+                        send_button.disabled = False
+                        self.query_one("#loading-bar").styles.display = "none"
+
                         # Check for tool calls (internal thought process) vs final response
                         if hasattr(last_message, 'tool_calls') and last_message.tool_calls:
                             tool_name = last_message.tool_calls[0]['name']
@@ -119,5 +135,6 @@ class App(App):
 
         finally:
             self.is_agent_running = False
+
 
 app = App()

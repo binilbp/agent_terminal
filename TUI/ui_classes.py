@@ -36,7 +36,8 @@ class Agent(Container):
 
 class StatusBar(Horizontal):
     def compose(self) -> ComposeResult:
-        yield LoadingIndicator()
+        yield LoadingIndicator(id="loading-bar")
+        yield Label("Fixing status bar")
         
 
 
@@ -67,6 +68,8 @@ class Command(Horizontal):
 class Terminal(Vertical):
     def compose(self) -> ComposeResult:
         yield Agent()
+        yield StatusBar(id="status-bar")
+
         with TabbedContent(id="input-command-tabbed"):
             with TabPane("Send Input", id="input-tab"):
                 yield Input()
