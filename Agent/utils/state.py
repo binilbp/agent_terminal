@@ -15,3 +15,5 @@ class AgentState(TypedDict):
     ]
     classification_reason: str
     plan_list: list[str]
+    status: str
+    clarification_questions_number: int
