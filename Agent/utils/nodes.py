@@ -66,9 +66,12 @@ def classification(state: AgentState) -> Command[Literal["planning", "out_of_sco
 
         if assist_required == "REQUIRES_LINUX_ASSISTANCE":
             goto = "planning"
+            status = "Generating Plan"
         elif assist_required == "DOES_NOT_REQUIRE_LINUX_ASSISTANCE":
             goto = "out_of_scope"
+            status = "Generating Reply"
         else:
+            status = "Clarifying the query"
             goto = "clarification"
 
     except Exception as e:
@@ -84,7 +87,8 @@ def classification(state: AgentState) -> Command[Literal["planning", "out_of_sco
     return Command( 
         update = {
             'classification': assist_required,
-            'classification_reason': reason
+            'classification_reason': reason,
+            'status': status
         },
         goto = goto,
     )
@@ -116,7 +120,7 @@ def out_of_scope(state: AgentState):
     if SETTINGS.debug:
         print(f'[NODE]: {result.content}')
 
-    return { "messages" : [result]}
+    return { "messages" : [result], "status": "Process Finished"}
 
 
 
@@ -153,7 +157,8 @@ def planning(state:AgentState):
 
     return {
         "plan_list": [result.plan_list],
-        "messages": [AIMessage(content = plan_str)]
+        "messages": [AIMessage(content = plan_str)],
+        "status": "Generating Command"
     }
 
 
@@ -191,7 +196,7 @@ def clarification(state: AgentState):
         print(f'[NODE]: {result.content}')
 
 
-    return {"messages": [result]}
+    return {"messages": [result], "status": "Getting Clarification from user"}
 
 
 from pprint import pformat
