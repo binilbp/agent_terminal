@@ -2,10 +2,12 @@ from rich.table import Table
 from textual.widgets import RichLog
 from rich.markdown import Markdown
 
-def write_log(self, icon: str, content: str, is_markdown: bool = False):
-    # this function allows to write content to agent_box
-    # pass icon , then str, then specify if markdown or not
 
+
+# this function allows to write content to agent_box
+# pass icon , then str, then specify if markdown or not
+def write_log(self, icon: str, content: str, is_markdown: bool = False):
+    
 
     agent_box = self.query_one("#agent-box", RichLog)
     
@@ -25,3 +27,16 @@ def write_log(self, icon: str, content: str, is_markdown: bool = False):
     
     # Optional: Add an empty line for spacing
     self.call_from_thread(lambda: agent_box.write(""))
+
+
+
+
+# this function used to set the content of the text displayed as status under the terminal(agent) box
+def set_status(self, status: str):
+    status_line = self.query_one("#status-line", RichLog)
+
+    #clear the existing line , we need to keep it one line
+    status_line.clear()
+    status_line.write(status)
+    
+
