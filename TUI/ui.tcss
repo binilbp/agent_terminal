@@ -36,6 +36,13 @@ Button {
     padding: 0 1;
 }
 
+#status-line{
+    color: $primary-darken-1;
+    background: $background-darken-1;
+    width:auto;
+    max-width: 100%
+}
+
 #loading-bar {
     width: 10;
     height: 1;
