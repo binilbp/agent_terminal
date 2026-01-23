@@ -37,7 +37,14 @@ class Agent(Container):
 class StatusBar(Horizontal):
     def compose(self) -> ComposeResult:
         yield LoadingIndicator(id="loading-bar")
-        yield Label("Fixing status bar")
+        status_line = RichLog(
+                id="status-line",
+                markup = True
+        )
+        yield status_line
+
+    def on_mount(self) -> None:
+        self.query_one("#status-line", RichLog).write("Type your query and press [green][/] to get started")
         
 
 
@@ -75,4 +82,21 @@ class Terminal(Vertical):
                 yield Input()
             with TabPane("Execute Command", id="command-tab"):
                 yield Command()
+
+
+
+# the following functions goes to the settings tab of app
+from config.settings import SETTINGS
+from rich.json import JSON
+
+class ViewSettings(Container):
+    def compose(self) -> ComposeResult:
+        settings_box = RichLog(id = "settings-box")
+        yield settings_box
+
+    def on_mount(self) -> None:
+        # pretty_settings =  JSON.from_data(SETTINGS)
+        self.query_one("#settings-box", RichLog).write(SETTINGS)
+
+
 
