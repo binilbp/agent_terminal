@@ -114,6 +114,10 @@ class App(App):
                     write_log(self,icon="  [red] [/] ", content = "Process stopped by user\n")
                     break
 
+                if "status" in event:
+                    set_status(self, status = event["status"])
+
+
                 #todo : implement current_plan list
                 if "current_plan" in event:
                     current_plan = event["current_plan"]
@@ -132,8 +136,6 @@ class App(App):
                         send_button.disabled = False
                         self.query_one("#loading-bar").styles.display = "none"
 
-                        # set status for finished processing
-                        set_status(self, status = "Processing finished")
                         # Check for tool calls (internal thought process) vs final response
                         if hasattr(last_message, 'tool_calls') and last_message.tool_calls:
                             tool_name = last_message.tool_calls[0]['name']
