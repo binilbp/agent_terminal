@@ -8,8 +8,8 @@ from textual import on, work
 from rich.markdown import Markdown
 from langchain_core.messages import HumanMessage
 from Agent.graph import get_graph
-from TUI.helper_functions import write_log
-from TUI.ui_classes import ASCIName, Terminal 
+from TUI.helper_functions import write_log, set_status
+from TUI.ui_classes import ASCIName, Terminal, ViewSettings
 
 
 
@@ -17,6 +17,7 @@ class App(App):
     
     CSS_PATH = "ui.tcss"
     theme = "dracula"
+
 
     
     def on_mount(self) -> None:
@@ -31,6 +32,7 @@ class App(App):
         self.query_one("#loading-bar").styles.display = "none"
 
 
+
     def compose(self) -> ComposeResult:
         with Vertical():
             yield ASCIName()
@@ -38,22 +40,10 @@ class App(App):
                 with TabPane("Agent Terminal", id="terminal"):
                     yield Terminal()
                 with TabPane("Settings", id="settings"):
-                    yield Label("Settings Page")
+                    yield ViewSettings()
             yield Footer()
+    
 
-    @on(Button.Pressed, "#stop-button")
-    @on(Button.Pressed, "#stop-input-button")
-    def handle_stop_button(self, event: Button.Pressed) -> None:
-        if self.is_agent_running == True:
-            self.is_agent_running = False
-            # give notification to the user
-            self.notify("Stopping generation..", severity="warning", timeout = 2.0)
-            
-            # send_button maybe disabled as we can stop before ai message retrieval,therefor enable send_button
-            send_button = self.query_one("#send-button", Button)
-            send_button.disabled = False
-            # we should also hide the loading-bar
-            self.query_one("#loading-bar").styles.display = "none"
 
     @on(Button.Pressed, "#send-button")
     def handle_send_button(self, event: Button.Pressed) -> None:
@@ -74,8 +64,30 @@ class App(App):
             #change the is_running to true
             self.is_agent_running = True
 
+            #set status to processing
+            set_status(self, status = "Processing user query")
+
             # Run the agent in a background thread
             self.run_agent_worker(user_input)
+
+
+
+    @on(Button.Pressed, "#stop-button")
+    @on(Button.Pressed, "#stop-input-button")
+    def handle_stop_button(self, event: Button.Pressed) -> None:
+        if self.is_agent_running == True:
+            self.is_agent_running = False
+            # give notification to the user
+            self.notify("Stopping execution..", severity="warning", timeout = 2.0)
+            set_status(self, status = "[red] [/] Process stopped by user")
+            
+            # send_button maybe disabled as we can stop before ai message retrieval,therefor enable send_button
+            send_button = self.query_one("#send-button", Button)
+            send_button.disabled = False
+            # we should also hide the loading-bar
+            self.query_one("#loading-bar").styles.display = "none"
+
+
 
     @work(exclusive=True, thread=True)
     def run_agent_worker(self, user_input: str) -> None:
@@ -102,6 +114,7 @@ class App(App):
                     write_log(self,icon="  [red] [/] ", content = "Process stopped by user\n")
                     break
 
+                #todo : implement current_plan list
                 if "current_plan" in event:
                     current_plan = event["current_plan"]
 
@@ -119,6 +132,8 @@ class App(App):
                         send_button.disabled = False
                         self.query_one("#loading-bar").styles.display = "none"
 
+                        # set status for finished processing
+                        set_status(self, status = "Processing finished")
                         # Check for tool calls (internal thought process) vs final response
                         if hasattr(last_message, 'tool_calls') and last_message.tool_calls:
                             tool_name = last_message.tool_calls[0]['name']
