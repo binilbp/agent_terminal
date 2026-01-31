@@ -1,6 +1,6 @@
 {
     "name": "Linquix",
-    "debug": true,
+    "debug": false,
     "classifier_llm": {
         "service" : "groq_api",
         "model_name": "qwen/qwen3-32b",
