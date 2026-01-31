@@ -16,4 +16,12 @@ class AgentState(TypedDict):
     classification_reason: str
     plan_list: list[str]
     status: str
-    clarification_questions_number: int
+    clarification_questions_number: int #this to implement
+    current_plan_index: int
+    current_command: str
+    execution_status: Literal[
+        "WAITING",
+        "READY",
+        "SUCCESS",
+        "FAIL"
+    ]

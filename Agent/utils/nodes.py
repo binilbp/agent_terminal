@@ -17,6 +17,7 @@ from pprint import pformat
 classifier_llm = get_llm("classifier")
 simple_chat_llm = get_llm("small_chat")
 planner_llm = get_llm("planner")
+command_gen_llm = get_llm("command_generator")
 
 
 
@@ -134,16 +135,15 @@ def planning(state:AgentState):
 
     user_query = state["messages"]
 
-    sys_message = SystemMessage(content = '''Role: You are a Senior Linux System Architect .
-    Task: Analyze the user's request and break it down into a series of simple, atomic, linear steps that can executed using a shell.
-    Output : Output the execution plan as a JSON object with a key "plan_list"
+    sys_message = SystemMessage(content = '''Role: You are a Senior Linux System Architect.
+    Task: Analyze the user's request and break it down into a series of simple, atomic, linear steps that can be executed using a shell.
+    
     Guidelines:
-        Each step must be a single logical action (e.g., "Update apt packages", "Install Python3", "Create a file named hello.py").
-        Ensure steps are in the correct dependency order.
-        The steps should be possible on the current user system
-        Do not include verification steps; the execution agent will handle verification.
-    IMPORTANT: "plan_list" must be a list of STRINGS only. Do not use objects or dictionaries.
-    Example: {"plan_list": ["update apt", "install python"]}''')
+        - Each step must be a single logical action (e.g., "Update apt packages", "Install Python3", "Create a file named hello.py").
+        - Ensure steps are in the correct dependency order.
+        - The steps should be possible on the current user system.
+        - Do not include verification steps; the execution agent will handle verification.
+    ''')
 
     message = [sys_message] + user_query
     result =  planner_llm.invoke( message )
@@ -158,7 +158,8 @@ def planning(state:AgentState):
     return {
         "plan_list": [result.plan_list],
         "messages": [AIMessage(content = plan_str)],
-        "status": "Generating Command"
+        "status": "Generating Command",
+        "execution_status": "WAITING"
     }
 
 
@@ -198,6 +199,101 @@ def clarification(state: AgentState):
 
     return {"messages": [result], "status": "Getting Clarification from user"}
 
+
+
+def supervisor(state:AgentState) -> Command[Literal["command_generation"]]:
+
+    if SETTINGS.debug:
+        print(f'\n[STATE INFO]: {pformat(state)}\n')
+        
+    print(f'[INFO]: supervisor node running')
+
+    exec_status = state['execution_status']
+
+    # waiting for code
+    if exec_status == "WAITING":
+        goto = "command_generation"
+        status = "Generating command"
+        #initial index setup
+        index = 0
+
+    # ready for starting execution
+    elif exec_status == "READY":
+        goto = "execution"
+        status = "Executing command"
+        index = state['current_plan_index']
+
+    return Command( 
+        update = {
+            'current_plan_index': index,
+            'status': status
+        },
+        goto = goto,
+    )
+
+
+
+
+
+def command_generation(state:AgentState):
+
+    if SETTINGS.debug:
+        print(f'\n[STATE INFO]: {pformat(state)}\n')
+
+    print(f'[INFO]: command generation node running')
+
+    index = state['current_plan_index']
+    current_plan = state['plan_list'][index]
+    
+    sys_message = SystemMessage(
+        content="You are a system administrator. Convert the user's plan into a single shell command."
+
+    )
+
+    try:
+        result =  command_gen_llm.invoke([sys_message, HumanMessage(content=f'user_plan:{current_plan}')])
+        print(f'command generated: {result.command}')
+        return {"current_command":result.command, 'execution_status': "READY"}
+
+    except:
+        return {"execution_status": "WAITING", "messages": "failed command generation"}
+
+    
+
+
+
+import subprocess, shlex
+def execution(state:AgentState):
+
+    if SETTINGS.debug:
+        print(f'\n[STATE INFO]: {pformat(state)}\n')
+
+    print(f'[INFO]: execution node running')
+
+    #converting command string words to list elements for passing to subprocess
+    command = shlex.split(state['current_command'])
+
+    try:
+        process = subprocess.run(
+            command,
+            cwd = "/home/binil/test/",
+            check = True,
+            capture_output = True,
+            text = True
+        )
+        print(f"Subprocess exited with status output: {process.stdout}")
+        return {'execution_status': "SUCCESS"}
+
+    except subprocess.CalledProcessError as e:
+        print(f"Execution failed: {e.stderr}")
+        return {'execution_status': "FAIL" }
+
+         
+
+
+
+
+    
 
 from pprint import pformat
 def test_print_state(state: AgentState):
