@@ -18,6 +18,9 @@ def get_llm(llm):
         case "planner":
             return get_planner_llm()
 
+        case "command_generator":
+            return get_command_generator_llm()
+
 
 
 def get_classifier_llm():
@@ -93,11 +96,31 @@ def get_planner_llm():
         )
 
     from Agent.schemas.node_schemas import PlanListSchema
-    structured_model = base_model.with_structured_output(PlanListSchema, method="json_mode")
+    structured_model = base_model.with_structured_output(PlanListSchema)
     # making the tool available for the model
     # model_with_tools = structured_model.bind_tools([get_system_info])
 
     return structured_model
 
-# ###### todo use match to set all to single functiono call, give is_executable llm
 
+def get_command_generator_llm():
+    if SETTINGS.command_gen_llm.service == "groq_api":
+        base_model = ChatGroq(
+                model=SETTINGS.command_gen_llm.model_name,
+                temperature = SETTINGS.command_gen_llm.model_temp,
+                max_retries = SETTINGS.command_gen_llm.max_retry,
+                max_tokens = SETTINGS.command_gen_llm.max_tokens
+        )
+
+    elif SETTINGS.command_gen_llm.service == "ollama":
+        base_model = ChatOllama(
+                model=SETTINGS.command_llm.model_name,
+                temperature = SETTINGS.command_gen_llm.model_temp,
+                max_retries = SETTINGS.command_gen_llm.max_retry,
+                max_tokens = SETTINGS.command_gen_llm.max_tokens
+        )
+
+    from Agent.schemas.node_schemas import CommandGenerationSchema
+    structured_model = base_model.with_structured_output(CommandGenerationSchema)
+
+    return structured_model
