@@ -44,14 +44,12 @@ class ClassificationSchema(BaseModel):
 
 class PlanListSchema(BaseModel):
     """
-    Plan schema to give output plan as a json list
+    The structural blueprint for the execution plan.    
     """
 
     plan_list: list[str] = Field(
-            description=(
-                "executiong plan given ONLY as a JSON list of strings. Do not include markdown formatting or explanations."
-            )
-    )
+        description="A list of atomic, linear execution steps.Each element should be a single string describing an action (e.g., ['update the apt', 'create a new file', 'find current working directory'])."
+        )
 
 
 
@@ -66,3 +64,17 @@ class TerminalExecutable(BaseModel):
                 "False if all steps cannot be completed using actual terminal commands"
             )
     )
+
+
+
+class CommandGenerationSchema(BaseModel):
+    """
+    Command Generation instruction
+    """
+
+    command: str = Field(
+            description=(
+                "the shell command to be executed, provided as a plain string"
+            )
+    )
+
