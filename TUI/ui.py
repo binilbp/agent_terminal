@@ -100,7 +100,9 @@ class App(App):
 
         # Prepare input for the graph
         inputs = {"messages": [HumanMessage(content=user_input)]}
-
+        
+        # Initialize content variable
+        content = ""
 
         send_button = self.query_one("#send-button", Button)
 
@@ -126,26 +128,29 @@ class App(App):
                     last_message = event["messages"][-1]
                     
                     # Skip re-printing the user's own message
-                    if isinstance(last_message, HumanMessage) and last_message.content == user_input:
+                    # if isinstance(last_message, HumanMessage) and last_message.content == user_input:
+                    #     continue
+                    if content == last_message.content:
                         continue
 
-                    content = last_message.content
+                    else:
+                        content = last_message.content
 
-                    if last_message.type == "ai":
-                        #enable the send_button again, since we got the ai message back
-                        send_button.disabled = False
-                        self.query_one("#loading-bar").styles.display = "none"
+                        if last_message.type == "ai":
+                            #enable the send_button again, since we got the ai message back
+                            send_button.disabled = False
+                            self.query_one("#loading-bar").styles.display = "none"
 
-                        # Check for tool calls (internal thought process) vs final response
-                        if hasattr(last_message, 'tool_calls') and last_message.tool_calls:
-                            tool_name = last_message.tool_calls[0]['name']
-                            write_log(self,icon="  [red] [/] ", content = f"{tool_name} Tool Called")
-                        else:
-                            # Render with Markdown
-                            write_log(self,icon="  [blue] [/] ", content = f"{content}")
+                            # Check for tool calls (internal thought process) vs final response
+                            if hasattr(last_message, 'tool_calls') and last_message.tool_calls:
+                                tool_name = last_message.tool_calls[0]['name']
+                                write_log(self,icon="  [red] [/] ", content = f"{tool_name} Tool Called")
+                            else:
+                                # Render with Markdown
+                                write_log(self,icon="  [blue] [/] ", content = f"{content}")
 
-                    elif last_message.type == "tool":
-                         self.call_from_thread(lambda: agent_box.write(f"[TOOL OUTPUT]: {content}"))
+                        elif last_message.type == "tool":
+                             self.call_from_thread(lambda: agent_box.write(f"[TOOL OUTPUT]: {content}"))
         
         except Exception as e:
             self.call_from_thread(lambda: agent_box.write(f"\n[ERROR]: {str(e)}\n"))

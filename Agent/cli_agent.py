@@ -35,16 +35,24 @@ def run_cli_agent():
                     config = config
         )
            
+        content = ""
         for event in events:
             if "messages" in event:
-                last_message = event["messages"][-1]
-                if last_message.type == "ai":
-                    if last_message.tool_calls:
-                        print(f"[INFO]: Tool Called: {last_message.tool_calls[0]['name']} ")
-                    else:
-                        print(f"\nAGENT: {last_message.content}\n")
+                if event['messages'][-1].content != content:
 
-                elif last_message.type == "tool":
-                    print(f"[INFO]: Tool Output: {last_message.content}")
+                    last_message = event["messages"][-1]
+                    content = last_message.content
 
+                    if last_message.type == "ai":
+                        if last_message.tool_calls:
+                            print(f"[INFO]: Tool Called: {last_message.tool_calls[0]['name']} ")
+                        else:
+                            print(f"\nAGENT: {content}\n")
+
+                    elif last_message.type == "tool":
+                        print(f"[INFO]: Tool Output: {last_message.content}")
+
+                else:
+                    #avoid printing the same message
+                    continue
 
